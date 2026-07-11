@@ -1,0 +1,20 @@
+{
+  "name": "lending-protocol-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "web3": "^4.1.0",
+    "ethers": "^5.7.2",
+    "@metamask/providers": "^10.2.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test"
+  },
+  "devDependencies": {
+    "react-scripts": "5.0.1"
+  }
+}
