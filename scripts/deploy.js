@@ -6,16 +6,16 @@ async function main() {
     console.log("=".repeat(60));
     console.log("🚀 DEPLOYING LENDING PROTOCOL");
     console.log("=".repeat(60));
-    
+
     // Get deployer
     const [deployer] = await hre.ethers.getSigners();
     console.log(`\n📤 Deploying with account: ${deployer.address}`);
     console.log(`💰 Balance: ${hre.ethers.utils.formatEther(await deployer.getBalance())} ETH\n`);
 
-     // ============================================
+    // ============================================
     // 1. DEPLOY DATA STORAGE
     // ============================================
-     console.log("📦 1. Deploying DataStorage...");
+    console.log("📦 1. Deploying DataStorage...");
     const DataStorage = await hre.ethers.getContractFactory("DataStorage");
     const dataStorage = await DataStorage.deploy();
     await dataStorage.deployed();
@@ -61,7 +61,7 @@ async function main() {
     const network = hre.network.name;
     console.log(`   🌐 Network: ${network}`);
 
-     // Select price feed
+    // Select price feed
     let priceFeedAddress;
     if (network === "arbitrumSepolia") {
         priceFeedAddress = PRICE_FEEDS.arbitrumSepolia.ETH_USD;
@@ -78,19 +78,19 @@ async function main() {
         priceFeedAddress = PRICE_FEEDS.arbitrumSepolia.ETH_USD;
         console.log("   ⚠️  Unknown network, using Arbitrum Sepolia price feed");
     }
-    
+
     console.log(`   🔗 Price Feed: ${priceFeedAddress}`);
-    
+
     const PriceOracle = await hre.ethers.getContractFactory("PriceOracle");
     const priceOracle = await PriceOracle.deploy(priceFeedAddress);
     await priceOracle.deployed();
     console.log(`   ✅ PriceOracle deployed to: ${priceOracle.address}`);
 
-     // ============================================
+    // ============================================
     // 3. DEPLOY COLLATERAL MANAGER
     // ============================================
     console.log("\n📦 3. Deploying CollateralManager...");
-    
+
     // Token Addresses
     const TOKENS = {
         // Ethereum Mainnet
@@ -111,19 +111,23 @@ async function main() {
         // Arbitrum Sepolia (Testnet)
         arbitrumSepolia: {
             WETH: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-            USDC: "0x2f958Cfc018Fe24b34f73c97Fc7E633c2eA9a31D"
+            USDC: "0x2F958Cfc018Fe24b34f73c97Fc7E633c2eA9a31D"
         },
         // Base Sepolia (Testnet)
         baseSepolia: {
             WETH: "0x4200000000000000000000000000000000000006",
             USDC: "0x67B8c4F1F3f366d4C8294Cf48Bda4b156F03D1B2"
+        },
+        localhost: {
+            WETH: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+            USDC: "0x5FbDB2315678afecb367f032d93F642f64180aa3"  // Use DataStorage address as mock USDC
         }
     };
 
     // Select token addresses
     let collateralTokenAddress;
     let debtTokenAddress;
-    
+
     if (network === "arbitrumSepolia") {
         collateralTokenAddress = TOKENS.arbitrumSepolia.WETH;
         debtTokenAddress = TOKENS.arbitrumSepolia.USDC;
@@ -139,15 +143,26 @@ async function main() {
     } else if (network === "mainnet" || network === "hardhat") {
         collateralTokenAddress = TOKENS.mainnet.WETH;
         debtTokenAddress = TOKENS.mainnet.USDC;
+    } else if (network === "sepolia") {  // ✅ Add this block for Sepolia
+        // Sepolia Testnet Token Addresses
+        collateralTokenAddress = "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9"; // Sepolia WETH
+        debtTokenAddress = "0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8"; // Sepolia USDC (mock)
+        console.log("   🧪 Using Sepolia testnet tokens");
+    }
+    else if (network === "localhost" || network === "hardhat") {
+        // ✅ MOCK TOKENS FOR LOCAL TESTING
+        collateralTokenAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"; // Mock WETH
+        debtTokenAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // Mock USDC
+        console.log("   🧪 Using mock tokens for local testing");
     } else {
         collateralTokenAddress = TOKENS.arbitrumSepolia.WETH;
         debtTokenAddress = TOKENS.arbitrumSepolia.USDC;
         console.log("   ⚠️  Unknown network, using Arbitrum Sepolia tokens");
     }
-    
+
     console.log(`   🪙 Collateral Token (WETH): ${collateralTokenAddress}`);
     console.log(`   🪙 Debt Token (USDC): ${debtTokenAddress}`);
-    
+
     const CollateralManager = await hre.ethers.getContractFactory("CollateralManager");
     const collateralManager = await CollateralManager.deploy(
         collateralTokenAddress,
@@ -161,7 +176,7 @@ async function main() {
     // 4. DEPLOY BORROW ENGINE
     // ============================================
     console.log("\n📦 4. Deploying BorrowEngine...");
-    
+
     const BorrowEngine = await hre.ethers.getContractFactory("BorrowEngine");
     const borrowEngine = await BorrowEngine.deploy(
         debtTokenAddress,
@@ -175,7 +190,7 @@ async function main() {
     // 5. DEPLOY LIQUIDATION ENGINE
     // ============================================
     console.log("\n📦 5. Deploying LiquidationEngine...");
-    
+
     const LiquidationEngine = await hre.ethers.getContractFactory("LiquidationEngine");
     const liquidationEngine = await LiquidationEngine.deploy(
         collateralTokenAddress,
@@ -190,7 +205,7 @@ async function main() {
     // 6. DEPLOY HEALTH MONITOR
     // ============================================
     console.log("\n📦 6. Deploying HealthMonitor...");
-    
+
     const HealthMonitor = await hre.ethers.getContractFactory("HealthMonitor");
     const healthMonitor = await HealthMonitor.deploy(
         dataStorage.address,
@@ -203,7 +218,7 @@ async function main() {
     // SAVE DEPLOYMENT ADDRESSES
     // ============================================
     console.log("\n💾 Saving deployment addresses...");
-    
+
     const deploymentData = {
         network: network,
         chainId: hre.network.config.chainId,
@@ -223,25 +238,25 @@ async function main() {
         },
         priceFeed: priceFeedAddress
     };
-    
+
     // Save to file
     const deployPath = path.join(__dirname, "../deployments");
     if (!fs.existsSync(deployPath)) {
         fs.mkdirSync(deployPath);
     }
-    
+
     const fileName = `deployment-${network}-${Date.now()}.json`;
     fs.writeFileSync(
         path.join(deployPath, fileName),
         JSON.stringify(deploymentData, null, 2)
     );
-    
+
     // Also save as latest
     fs.writeFileSync(
         path.join(deployPath, "latest.json"),
         JSON.stringify(deploymentData, null, 2)
     );
-    
+
     console.log(`   ✅ Deployment data saved to: deployments/${fileName}`);
 
     // ============================================

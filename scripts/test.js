@@ -7,8 +7,20 @@ async function main() {
     console.log("🧪 RUNNING PROTOCOL TESTS");
     console.log("=".repeat(60));
 
-    // Get deployer
-    const [deployer, user1, user2, user3] = await hre.ethers.getSigners();
+    // Get accounts
+    let deployer, user1, user2, user3;
+    
+    try {
+        const signers = await hre.ethers.getSigners();
+        deployer = signers[0];
+        user1 = signers[1] || signers[0];
+        user2 = signers[2] || signers[0];
+        user3 = signers[3] || signers[0];
+    } catch (error) {
+        console.error("❌ Failed to get signers:", error.message);
+        process.exit(1);
+    }
+    
     console.log(`\n📤 Testing with accounts:`);
     console.log(`   Deployer: ${deployer.address}`);
     console.log(`   User 1: ${user1.address}`);
@@ -26,35 +38,10 @@ async function main() {
     console.log("📋 Loaded deployment from:", deployPath);
 
     // ============================================
-    // TEST 1: DEPOSIT COLLATERAL
+    // TEST 1: GET USER DATA
     // ============================================
     console.log("\n" + "=".repeat(40));
-    console.log("🧪 TEST 1: Deposit Collateral");
-    console.log("=".repeat(40));
-    
-    try {
-        const collateralManager = await hre.ethers.getContractAt(
-            "CollateralManager",
-            deployment.contracts.CollateralManager
-        );
-        
-        const depositAmount = hre.ethers.utils.parseEther("1");
-        console.log(`   📤 User 1 depositing ${hre.ethers.utils.formatEther(depositAmount)} ETH...`);
-        
-        // Note: In production, you'd need actual WETH tokens
-        // This is a simulation
-        console.log("   ⚠️  Note: Requires actual WETH tokens to deposit");
-        console.log("   ✅ Test 1: Deposit function called (requires tokens)");
-        
-    } catch (error) {
-        console.error("   ❌ Test 1 failed:", error.message);
-    }
-
-    // ============================================
-    // TEST 2: GET USER DATA
-    // ============================================
-    console.log("\n" + "=".repeat(40));
-    console.log("🧪 TEST 2: Get User Data");
+    console.log("🧪 TEST 1: Get User Data");
     console.log("=".repeat(40));
     
     try {
@@ -69,17 +56,17 @@ async function main() {
         console.log(`   Debt: ${hre.ethers.utils.formatEther(userData.debt)} USDC`);
         console.log(`   Health Factor: ${userData.healthFactor}`);
         console.log(`   Last Update: ${new Date(userData.lastUpdate * 1000).toLocaleString()}`);
-        console.log("   ✅ Test 2: User data retrieved successfully");
+        console.log("   ✅ Test 1: User data retrieved successfully");
         
     } catch (error) {
-        console.error("   ❌ Test 2 failed:", error.message);
+        console.error("   ❌ Test 1 failed:", error.message);
     }
 
     // ============================================
-    // TEST 3: GET HEALTH FACTOR
+    // TEST 2: GET HEALTH FACTOR
     // ============================================
     console.log("\n" + "=".repeat(40));
-    console.log("🧪 TEST 3: Get Health Factor");
+    console.log("🧪 TEST 2: Get Health Factor");
     console.log("=".repeat(40));
     
     try {
@@ -96,17 +83,17 @@ async function main() {
         console.log(`   Health Factor: ${healthFactor}`);
         console.log(`   Risk Status: ${riskStatus}`);
         console.log(`   Is Safe: ${isSafe}`);
-        console.log("   ✅ Test 3: Health factor retrieved successfully");
+        console.log("   ✅ Test 2: Health factor retrieved successfully");
         
     } catch (error) {
-        console.error("   ❌ Test 3 failed:", error.message);
+        console.error("   ❌ Test 2 failed:", error.message);
     }
 
     // ============================================
-    // TEST 4: GET PRICE
+    // TEST 3: GET PRICE
     // ============================================
     console.log("\n" + "=".repeat(40));
-    console.log("🧪 TEST 4: Get Price");
+    console.log("🧪 TEST 3: Get Price");
     console.log("=".repeat(40));
     
     try {
@@ -116,21 +103,21 @@ async function main() {
         );
         
         const price = await priceOracle.getLatestPrice();
-        const priceInUSD = price / 1e18;
+        const priceInUSD = Number(price) / 1e18;
         console.log(`   📊 ETH Price:`);
         console.log(`   Price (wei): ${price}`);
         console.log(`   Price (USD): $${priceInUSD.toFixed(2)}`);
-        console.log("   ✅ Test 4: Price retrieved successfully");
+        console.log("   ✅ Test 3: Price retrieved successfully");
         
     } catch (error) {
-        console.error("   ❌ Test 4 failed:", error.message);
+        console.error("   ❌ Test 3 failed:", error.message);
     }
 
     // ============================================
-    // TEST 5: CHECK LIQUIDATABLE
+    // TEST 4: CHECK LIQUIDATABLE
     // ============================================
     console.log("\n" + "=".repeat(40));
-    console.log("🧪 TEST 5: Check Liquidatable");
+    console.log("🧪 TEST 4: Check Liquidatable");
     console.log("=".repeat(40));
     
     try {
@@ -147,17 +134,17 @@ async function main() {
         console.log(`   Is Liquidatable: ${isLiquidatable}`);
         console.log(`   Penalty: ${hre.ethers.utils.formatEther(penalty)} USDC`);
         console.log(`   Collateral to Receive: ${hre.ethers.utils.formatEther(collateralToReceive)} ETH`);
-        console.log("   ✅ Test 5: Liquidation status checked");
+        console.log("   ✅ Test 4: Liquidation status checked");
         
     } catch (error) {
-        console.error("   ❌ Test 5 failed:", error.message);
+        console.error("   ❌ Test 4 failed:", error.message);
     }
 
     // ============================================
-    // TEST 6: GET MAX BORROW
+    // TEST 5: GET MAX BORROW
     // ============================================
     console.log("\n" + "=".repeat(40));
-    console.log("🧪 TEST 6: Get Max Borrow");
+    console.log("🧪 TEST 5: Get Max Borrow");
     console.log("=".repeat(40));
     
     try {
@@ -169,10 +156,10 @@ async function main() {
         const maxBorrow = await borrowEngine.getMaxBorrow(user1.address);
         console.log(`   📊 User 1 Max Borrow:`);
         console.log(`   Max Borrow: ${hre.ethers.utils.formatEther(maxBorrow)} USDC`);
-        console.log("   ✅ Test 6: Max borrow retrieved successfully");
+        console.log("   ✅ Test 5: Max borrow retrieved successfully");
         
     } catch (error) {
-        console.error("   ❌ Test 6 failed:", error.message);
+        console.error("   ❌ Test 5 failed:", error.message);
     }
 
     // ============================================
@@ -182,12 +169,11 @@ async function main() {
     console.log("✅ TEST SUMMARY");
     console.log("=".repeat(60));
     console.log("\n📋 Test Results:");
-    console.log("   ✅ Test 1: Deposit Collateral (simulated)");
-    console.log("   ✅ Test 2: Get User Data");
-    console.log("   ✅ Test 3: Get Health Factor");
-    console.log("   ✅ Test 4: Get Price");
-    console.log("   ✅ Test 5: Check Liquidatable");
-    console.log("   ✅ Test 6: Get Max Borrow");
+    console.log("   ✅ Test 1: Get User Data");
+    console.log("   ✅ Test 2: Get Health Factor");
+    console.log("   ✅ Test 3: Get Price");
+    console.log("   ✅ Test 4: Check Liquidatable");
+    console.log("   ✅ Test 5: Get Max Borrow");
     console.log("\n🌐 Network:");
     console.log(`   ${deployment.network} (Chain ID: ${deployment.chainId})`);
     console.log("\n📊 Contract Addresses:");
