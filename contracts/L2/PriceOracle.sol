@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @dev Fetches real-time prices from Chainlink
  */
 contract PriceOracle is Ownable {
+    // get the price feed from Chainlink
     AggregatorV3Interface internal priceFeed;
 
     uint256 public constant DECIMALS = 1e18;
@@ -19,7 +20,9 @@ contract PriceOracle is Ownable {
     event PriceFeedUpdated(address newFeed);
 
      constructor(address _priceFeed) {
+        // Validate the price feed address
         require(_priceFeed != address(0), "Invalid price feed");
+        // Initialize the price feed
         priceFeed = AggregatorV3Interface(_priceFeed);
     }
 
@@ -27,6 +30,7 @@ contract PriceOracle is Ownable {
      * @dev Get latest ETH/USD price
      */
     function getLatestPrice() public view returns (uint256) {
+        // assign the latest prices into the variables using chainlink
         (
             uint80 roundId,
             int price,
@@ -42,6 +46,7 @@ contract PriceOracle is Ownable {
 
         // Convert to 18 decimals
         uint8 decimals = priceFeed.decimals();
+        // Return price in 18 decimals
         return uint256(price) * (10 ** (18 - decimals));
     }
 
@@ -59,6 +64,7 @@ contract PriceOracle is Ownable {
      */
     function updatePriceFeed(address newPriceFeed) external onlyOwner {
         require(newPriceFeed != address(0), "Invalid price feed");
+        // Update the price feed address
         priceFeed = AggregatorV3Interface(newPriceFeed);
         emit PriceFeedUpdated(newPriceFeed);
     }
