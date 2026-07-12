@@ -60,21 +60,12 @@ module.exports = {
   etherscan: {
     apiKey: {
       sepolia: process.env.ETHERSCAN_API_KEY
-    },
-    customChains: [
-      {
-        network: "sepolia",
-        chainId: 11155111,
-        urls: {
-          apiURL: "https://api.etherscan.io/v2/api?chainid=11155111",
-          browserURL: "https://sepolia.etherscan.io"
-        }
-      }
-    ]
+    }
   },
-    sourcify: {
-        enabled: false
-    },
+  sourcify: {
+    enabled: false
+  },
+
   gasReporter: {
     enabled: true,
     currency: "USD",
