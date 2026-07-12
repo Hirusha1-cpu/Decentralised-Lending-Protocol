@@ -56,11 +56,12 @@ contract Escrow is Ownable, ReentrancyGuard {
      * @dev Release assets
      */
     function releaseAssets(address user, address token,uint256 amount) external onlyL2Escrow nonReentrant {
+        // checks the validity of the user, token, and amount
         require(user != address(0), "Invalid user");
         require(token != address(0), "Invalid token");
         require(amount > 0, "Amount must be > 0");
         require(escrowBalances[token][user] >= amount, "Insufficient balance");
-        // release amounts from the escrow
+        // release amounts from the escrow for the user, reduce the escrow balance
         escrowBalances[token][user] -= amount;
         // transfer the released amounts to the user
         IERC20(token).transfer(user, amount);
