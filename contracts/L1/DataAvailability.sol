@@ -25,6 +25,7 @@ contract DataAvailability is Ownable {
     event BatchVerified(uint256 indexed batchId);
     event SequencerUpdated(address newSequencer);
 
+    // this modifier is only for the sequencer to store batch data
     modifier onlySequencer() {
         require(msg.sender == sequencer, "Only sequencer");
         _;
@@ -34,6 +35,7 @@ contract DataAvailability is Ownable {
      * @dev Set sequencer address
      */
     function setSequencer(address _sequencer) external onlyOwner {
+        // set the sequencer address and emit an event
         sequencer = _sequencer;
         emit SequencerUpdated(_sequencer);
     }
@@ -50,6 +52,7 @@ contract DataAvailability is Ownable {
         batchStateRoots[batchId] = stateRoot;
         // assign timestamp
         batchTimestamps[batchId] = block.timestamp;
+        // increment the next batch id for the next batch
         nextBatchId++;
         emit BatchDataStored(batchId, stateRoot);
     }
@@ -58,6 +61,7 @@ contract DataAvailability is Ownable {
      * @dev Verify batch
      */
     function verifyBatch(uint256 batchId) external onlyOwner {
+        // verify that the batch exists and wheather it has already verified or not
         require(batchData[batchId].length > 0, "Batch does not exist");
         require(!batchVerified[batchId], "Already verified");
         

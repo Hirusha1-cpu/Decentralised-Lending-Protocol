@@ -39,11 +39,12 @@ contract Bridge is Ownable, ReentrancyGuard {
      * @dev Set L2 bridge address
      */
     function setL2Bridge(address _l2Bridge) external onlyOwner {
+        // set the L2 bridge address and emit an event
         l2Bridge = _l2Bridge;
     }
 
     /**
-     * @dev Deposit tokens from L1 to L2
+     * @dev Deposit tokens from L1 to L2, locks them in the bridge contract, and sends a message to L2
      */
     function depositToL2(address token, uint256 amount) external nonReentrant {
         require(token != address(0), "Invalid token");
@@ -62,14 +63,7 @@ contract Bridge is Ownable, ReentrancyGuard {
         emit TokensLocked(msg.sender, token, amount);
     }
 
-    /**
-     * @dev Withdraw tokens from L2 to L1
-     */
-    function withdrawFromL1(
-        address token,
-        address user,
-        uint256 amount
-    ) external onlyL2Bridge nonReentrant {
+    function _withdraw(address token, address user, uint256 amount) internal {
         require(token != address(0), "Invalid token");
         require(amount > 0, "Amount must be > 0");
         require(
@@ -77,14 +71,43 @@ contract Bridge is Ownable, ReentrancyGuard {
             "Insufficient locked balance"
         );
 
-        // Unlock tokens
         lockedTokens[token][user] -= amount;
-
-        // Transfer tokens to user
         IERC20(token).transfer(user, amount);
 
         emit TokensUnlocked(user, token, amount);
     }
+
+    function withdrawFromL1(
+        address token,
+        address user,
+        uint256 amount
+    ) external onlyL2Bridge nonReentrant {
+        _withdraw(token, user, amount);
+    }
+
+    /**
+     * @dev Withdraw tokens from L2 to L1
+     */
+    // function withdrawFromL1(
+    //     address token,
+    //     address user,
+    //     uint256 amount
+    // ) public onlyL2Bridge nonReentrant {
+    //     require(token != address(0), "Invalid token");
+    //     require(amount > 0, "Amount must be > 0");
+    //     require(
+    //         lockedTokens[token][user] >= amount,
+    //         "Insufficient locked balance"
+    //     );
+
+    //     // Unlock tokens
+    //     lockedTokens[token][user] -= amount;
+
+    //     // Transfer tokens to user
+    //     IERC20(token).transfer(user, amount);
+
+    //     emit TokensUnlocked(user, token, amount);
+    // }
 
     /**
      * @dev Send message to L2 bridge
@@ -100,17 +123,25 @@ contract Bridge is Ownable, ReentrancyGuard {
     function receiveMessage(bytes memory message) external onlyL2Bridge {
         // In production: decode and execute message
         // Example: Withdraw tokens
-        ( string memory action,address user, address token,uint256 amount) = abi.decode(message, (string, address, address, uint256));
+        (
+            string memory action,
+            address user,
+            address token,
+            uint256 amount
+        ) = abi.decode(message, (string, address, address, uint256));
 
         if (keccak256(bytes(action)) == keccak256(bytes("Withdraw"))) {
-            withdrawFromL1(token, user, amount);
+            _withdraw(token, user, amount);
         }
     }
 
     /**
      * @dev Get locked balance
      */
-    function getLockedBalance( address token, address user) external view returns (uint256) {
+    function getLockedBalance(
+        address token,
+        address user
+    ) external view returns (uint256) {
         return lockedTokens[token][user];
     }
 }
