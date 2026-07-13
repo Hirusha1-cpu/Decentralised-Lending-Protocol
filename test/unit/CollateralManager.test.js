@@ -12,7 +12,7 @@ describe("CollateralManager", function () {
     beforeEach(async function () {
         [owner, user1] = await ethers.getSigners();
 
-        // Deploy mock WETH - Update path to correct location
+        // Deploy mock WETH
         const WETH = await ethers.getContractFactory("contracts/mocks/WETH9.sol:WETH9");
         weth = await WETH.deploy();
         await weth.deployed();
@@ -22,12 +22,12 @@ describe("CollateralManager", function () {
         dataStorage = await DataStorage.deploy();
         await dataStorage.deployed();
 
-        // Deploy PriceOracle (with mock feed)
-        const PriceOracle = await ethers.getContractFactory("PriceOracle");
-        priceOracle = await PriceOracle.deploy("0x0000000000000000000000000000000000000000");
+        // ✅ FIX: Deploy MockPriceOracle instead of real PriceOracle
+        const MockPriceOracle = await ethers.getContractFactory("contracts/mocks/MockPriceOracle.sol:MockPriceOracle");
+        priceOracle = await MockPriceOracle.deploy();
         await priceOracle.deployed();
 
-        // Deploy CollateralManager
+        // Deploy CollateralManager with mock price oracle
         const CollateralManager = await ethers.getContractFactory("CollateralManager");
         collateralManager = await CollateralManager.deploy(
             weth.address,
@@ -35,14 +35,16 @@ describe("CollateralManager", function () {
             priceOracle.address
         );
         await collateralManager.deployed();
+         // ✅ FIX: Transfer DataStorage ownership to CollateralManager
+        await dataStorage.transferOwnership(collateralManager.address);
     });
 
     describe("depositCollateral", function () {
         it("Should allow user to deposit collateral", async function () {
             const depositAmount = ethers.utils.parseEther("1");
             
-            // Send ETH to WETH contract
-            await weth.connect(owner).deposit({ value: depositAmount });
+            // Mint WETH to user
+            await weth.deposit({ value: depositAmount });
             await weth.transfer(user1.address, depositAmount);
             
             // Approve and deposit
@@ -65,13 +67,16 @@ describe("CollateralManager", function () {
         it("Should allow user to withdraw collateral", async function () {
             const depositAmount = ethers.utils.parseEther("1");
             
-            await weth.connect(owner).deposit({ value: depositAmount });
+            // Deposit first
+            await weth.deposit({ value: depositAmount });
             await weth.transfer(user1.address, depositAmount);
             await weth.connect(user1).approve(collateralManager.address, depositAmount);
             await collateralManager.connect(user1).depositCollateral(depositAmount);
             
+            // Withdraw
             await collateralManager.connect(user1).withdrawCollateral(depositAmount);
             
+            // Check user data
             const userData = await dataStorage.getUserData(user1.address);
             expect(userData.collateral).to.equal(0);
         });
