@@ -22,9 +22,12 @@ describe("BorrowEngine", function () {
         dataStorage = await DataStorage.deploy();
         await dataStorage.deployed();
 
+        // ✅ FIX: Use a valid price feed address (not zero address)
+        const priceFeedAddress = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419";
+
         // Deploy PriceOracle
         const PriceOracle = await ethers.getContractFactory("PriceOracle");
-        priceOracle = await PriceOracle.deploy("0x0000000000000000000000000000000000000000");
+        priceOracle = await PriceOracle.deploy(priceFeedAddress);
         await priceOracle.deployed();
 
         // Deploy BorrowEngine
