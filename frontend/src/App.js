@@ -20,10 +20,12 @@ const TABS = [
 function App() {
   const web3 = useWeb3();
   const contracts = useContracts(web3.signer, web3.provider);
+  console.log("contracts",contracts);
   const { position, loading, error: positionError, refresh } = usePosition(contracts, web3.account);
   const [activeTab, setActiveTab] = useState('dashboard');
 
   const isConnected = web3.isConnected;
+  
 
   return (
     <div className="app">

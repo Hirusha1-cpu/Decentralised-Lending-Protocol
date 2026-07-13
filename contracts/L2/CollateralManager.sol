@@ -21,7 +21,11 @@ contract CollateralManager is ReentrancyGuard, Ownable {
     event CollateralWithdrawn(address indexed user, uint256 amount);
     event HealthFactorUpdated(address indexed user, uint256 healthFactor);
 
-    constructor(address _collateralToken, address _dataStorage, address _priceOracle) {
+    constructor(
+        address _collateralToken,
+        address _dataStorage,
+        address _priceOracle
+    ) {
         require(_collateralToken != address(0), "Invalid collateral token");
         require(_dataStorage != address(0), "Invalid data storage");
         require(_priceOracle != address(0), "Invalid price oracle");
@@ -44,7 +48,9 @@ contract CollateralManager is ReentrancyGuard, Ownable {
         collateralToken.transferFrom(msg.sender, address(this), amount);
 
         // Get user data
-        DataStorage.UserData memory userData = dataStorage.getUserData(msg.sender);
+        DataStorage.UserData memory userData = dataStorage.getUserData(
+            msg.sender
+        );
 
         // Update collateral
         userData.collateral += amount;
@@ -62,11 +68,9 @@ contract CollateralManager is ReentrancyGuard, Ownable {
 
         // Update health factor
         _updateHealthFactor(msg.sender);
-        
+
         emit CollateralDeposited(msg.sender, amount);
-
     }
-
 
     /**
      * @dev User withdraws collateral
@@ -75,7 +79,9 @@ contract CollateralManager is ReentrancyGuard, Ownable {
         require(amount > 0, "Amount must be > 0");
 
         // get user data
-        DataStorage.UserData memory userData = dataStorage.getUserData(msg.sender);
+        DataStorage.UserData memory userData = dataStorage.getUserData(
+            msg.sender
+        );
         require(userData.collateral >= amount, "Insufficient collateral");
 
         // Check if user has debt
@@ -88,7 +94,8 @@ contract CollateralManager is ReentrancyGuard, Ownable {
             // get the usd price of collataral
             uint256 newCollateralUSD = (newCollateral * price) / 1e18;
             // check the health factor if there is existing debt, if still healthy, then can be withdraw
-            uint256 healthFactor = (newCollateralUSD * 100) / (userData.debt * 150);
+            uint256 healthFactor = (newCollateralUSD * 100) /
+                (userData.debt * 150);
             require(healthFactor >= 1e18, "Position would be liquidatable");
         }
 
@@ -107,18 +114,19 @@ contract CollateralManager is ReentrancyGuard, Ownable {
 
         // Update health factor
         _updateHealthFactor(msg.sender);
-        
+
         emit CollateralWithdrawn(msg.sender, amount);
     }
 
     /**
      * @dev Get user's collateral value in USD
      */
-    function getCollateralValueUSD(address user) external view returns (uint256) {
+    function getCollateralValueUSD(
+        address user
+    ) external view returns (uint256) {
         DataStorage.UserData memory userData = dataStorage.getUserData(user);
         return userData.collateralUSD;
     }
-    
 
     /**
      * @dev Update health factor
@@ -126,22 +134,23 @@ contract CollateralManager is ReentrancyGuard, Ownable {
     function _updateHealthFactor(address user) internal {
         DataStorage.UserData memory userData = dataStorage.getUserData(user);
         uint256 healthFactor = 0;
-        
+
         if (userData.debt > 0) {
-            healthFactor = (userData.collateralUSD * 100) / (userData.debt * 150);
+            healthFactor =
+                (userData.collateralUSD * 100) /
+                (userData.debt * 150);
+            // Cap at 1e18 for safety
+            if (healthFactor > 1e18) {
+                healthFactor = 1e18;
+            }
+        } else {
+            // ✅ No debt = infinite health
+            healthFactor = type(uint256).max;
         }
-        
-        if (healthFactor > 1e18) {
-            healthFactor = 1e18;
-        }
-        
+
         userData.healthFactor = healthFactor;
         dataStorage.setUserData(user, userData);
-        
+
         emit HealthFactorUpdated(user, healthFactor);
     }
-
-
-
-
 }
