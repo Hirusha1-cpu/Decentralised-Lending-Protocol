@@ -144,21 +144,35 @@ contract BorrowEngine is ReentrancyGuard, Ownable {
     /**
      * @dev Update health factor
      */
+    // function _updateHealthFactor(address user) internal {
+    //     DataStorage.UserData memory userData = dataStorage.getUserData(user);
+    //     uint256 healthFactor = 0;
+        
+    //     if (userData.debt > 0) {
+    //         healthFactor = (userData.collateralUSD * 100) / (userData.debt * COLLATERAL_RATIO);
+    //     }
+        
+    //     if (healthFactor > 1e18) {
+    //         healthFactor = 1e18;
+    //     }
+        
+    //     userData.healthFactor = healthFactor;
+    //     dataStorage.setUserData(user, userData);
+    // }
     function _updateHealthFactor(address user) internal {
-        DataStorage.UserData memory userData = dataStorage.getUserData(user);
-        uint256 healthFactor = 0;
-        
-        if (userData.debt > 0) {
-            healthFactor = (userData.collateralUSD * 100) / (userData.debt * COLLATERAL_RATIO);
-        }
-        
-        if (healthFactor > 1e18) {
-            healthFactor = 1e18;
-        }
-        
-        userData.healthFactor = healthFactor;
-        dataStorage.setUserData(user, userData);
+    DataStorage.UserData memory userData = dataStorage.getUserData(user);
+    uint256 healthFactor = 0;
+    
+    if (userData.debt > 0) {
+        healthFactor = (userData.collateralUSD * 100) / (userData.debt * 150);
+    } else {
+        // ✅ Fix: No debt = infinite health (type(uint256).max)
+        healthFactor = type(uint256).max;
     }
+    
+    userData.healthFactor = healthFactor;
+    dataStorage.setUserData(user, userData);
+} 
 
 
 }
