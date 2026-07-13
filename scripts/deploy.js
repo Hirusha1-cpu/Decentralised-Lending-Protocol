@@ -34,6 +34,11 @@ async function main() {
             BTC_USD: "0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c",
             USDC_USD: "0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6"
         },
+        sepolia: {
+            ETH_USD: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
+            BTC_USD: "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43",
+            USDC_USD: "0xA2F78ab2355fe2f984D808B5CeE7FD0A93D5270E"
+        },
         // Arbitrum Mainnet
         arbitrum: {
             ETH_USD: "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612",
@@ -73,6 +78,8 @@ async function main() {
         priceFeedAddress = PRICE_FEEDS.base.ETH_USD;
     } else if (network === "mainnet" || network === "hardhat") {
         priceFeedAddress = PRICE_FEEDS.mainnet.ETH_USD;
+    } else if (network === "sepolia") {  // ✅ Sepolia 
+        priceFeedAddress = PRICE_FEEDS.sepolia.ETH_USD;
     } else {
         // Default to Arbitrum Sepolia for testing
         priceFeedAddress = PRICE_FEEDS.arbitrumSepolia.ETH_USD;

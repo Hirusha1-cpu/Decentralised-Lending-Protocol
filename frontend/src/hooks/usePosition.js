@@ -55,6 +55,8 @@ export function usePosition(contracts, account) {
         walletDebtBalance,
       });
     } catch (err) {
+        console.log("error",err);
+        
       setError(err?.shortMessage || err?.message || 'Failed to load position');
     } finally {
       setLoading(false);
