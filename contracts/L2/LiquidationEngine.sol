@@ -91,7 +91,7 @@ contract LiquidationEngine is ReentrancyGuard, Ownable {
         uint256 price = priceOracle.getLatestPrice();
         uint256 collateralUSD = (userData.collateral * price) / 1e18;
         
-        uint256 healthFactor = (collateralUSD * 100) / (userData.debt * COLLATERAL_RATIO);
+        uint256 healthFactor = (collateralUSD * 1e18 * 100) / (userData.debt * COLLATERAL_RATIO);
         return healthFactor < 1e18;
     }
 

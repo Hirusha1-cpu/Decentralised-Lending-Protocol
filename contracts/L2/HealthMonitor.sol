@@ -35,9 +35,9 @@ contract HealthMonitor {
         }
         
         uint256 price = priceOracle.getLatestPrice();
-        uint256 collateralUSD = (userData.collateral * price) / 1e18;
+        uint256 collateralUSD = (userData.collateral *  price) / 1e18;
         
-        return (collateralUSD * 100) / (userData.debt * COLLATERAL_RATIO);
+        return (collateralUSD * 1e18 * 100) / (userData.debt * COLLATERAL_RATIO);
     }
     
     /**
