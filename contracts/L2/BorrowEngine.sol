@@ -54,7 +54,8 @@ contract BorrowEngine is ReentrancyGuard, Ownable {
         uint256 price = priceOracle.getLatestPrice();
         uint256 collateralUSD = userData.collateralUSD;
 
-        uint256 healthFactor = (collateralUSD * 100) / (newDebt * COLLATERAL_RATIO);
+        // uint256 healthFactor = (collateralUSD * 100) / (newDebt * COLLATERAL_RATIO);
+        uint256 healthFactor = (collateralUSD * 1e18 * 100) / (newDebt * COLLATERAL_RATIO);
         require(healthFactor >= 1e18, "Position would be unsafe");
 
         // Update user data
@@ -149,7 +150,7 @@ contract BorrowEngine is ReentrancyGuard, Ownable {
     uint256 healthFactor = 0;
     
     if (userData.debt > 0) {
-        healthFactor = (userData.collateralUSD * 100) / (userData.debt * 150);
+        healthFactor = (userData.collateralUSD * 1e18 * 100) / (userData.debt * 150);
     } else {
         // ✅ Fix: No debt = infinite health (type(uint256).max)
         healthFactor = type(uint256).max;
