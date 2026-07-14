@@ -96,7 +96,7 @@ contract CollateralManager is ReentrancyGuard, Ownable {
             // get the usd price of collataral
             uint256 newCollateralUSD = (newCollateral * price) / 1e18;
             // check the health factor if there is existing debt, if still healthy, then can be withdraw
-            uint256 healthFactor = (newCollateralUSD * 100) /
+            uint256 healthFactor = (newCollateralUSD * 1e18 * 100) /
                 (userData.debt * 150);
             require(healthFactor >= 1e18, "Position would be liquidatable");
         }

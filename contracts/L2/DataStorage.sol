@@ -30,10 +30,29 @@ contract DataStorage is Ownable {
     event UserDataUpdated(address indexed user);
     event ProtocolParameterUpdated(string parameter, uint256 value);
 
+      // Authorized contracts that can write user data (CollateralManager, BorrowEngine, LiquidationEngine)
+    mapping(address => bool) public authorizedCallers;
+
+    event AuthorizedCallerUpdated(address indexed caller, bool status);
+
+    modifier onlyAuthorized() {
+        require(authorizedCallers[msg.sender] || msg.sender == owner(), "Not authorized");
+        _;
+    }
+
+    /**
+     * @dev Authorize a contract (e.g. CollateralManager, BorrowEngine, LiquidationEngine) to write user data
+     */
+    function setAuthorizedCaller(address caller, bool status) external onlyOwner {
+        require(caller != address(0), "Invalid caller");
+        authorizedCallers[caller] = status;
+        emit AuthorizedCallerUpdated(caller, status);
+    }
+
     /**
      * @dev Set user data
      */
-    function setUserData(address user, UserData memory data) external onlyOwner {
+    function setUserData(address user, UserData memory data) external onlyAuthorized {
         userData[user] = data;
         emit UserDataUpdated(user);
     }
