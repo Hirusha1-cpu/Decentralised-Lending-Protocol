@@ -20,6 +20,7 @@ contract CollateralManager is ReentrancyGuard, Ownable {
     event CollateralDeposited(address indexed user, uint256 amount);
     event CollateralWithdrawn(address indexed user, uint256 amount);
     event HealthFactorUpdated(address indexed user, uint256 healthFactor);
+    
 
     constructor(
         address _collateralToken,
@@ -36,6 +37,7 @@ contract CollateralManager is ReentrancyGuard, Ownable {
         dataStorage = DataStorage(_dataStorage);
         priceOracle = PriceOracle(_priceOracle);
     }
+    
 
     /**
      * @dev User deposits collateral
@@ -152,5 +154,9 @@ contract CollateralManager is ReentrancyGuard, Ownable {
         dataStorage.setUserData(user, userData);
 
         emit HealthFactorUpdated(user, healthFactor);
+    }
+
+    function updateHealthFactor(address user) external {
+        _updateHealthFactor(user);
     }
 }

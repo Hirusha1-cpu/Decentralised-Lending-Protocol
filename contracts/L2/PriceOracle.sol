@@ -13,7 +13,7 @@ contract PriceOracle is Ownable {
     AggregatorV3Interface internal priceFeed;
 
     uint256 public constant DECIMALS = 1e18;
-    uint256 public constant MAX_STALENESS = 1 hours;
+    uint256 public constant MAX_STALENESS = 1 days;
 
     // Events
     event PriceUpdated(uint256 price);
