@@ -94,6 +94,15 @@ async function main() {
     console.log(`   ✅ PriceOracle deployed to: ${priceOracle.address}`);
 
     // ============================================
+    // 2.5 DEPLOY OUR OWN MOCK USDC (so we control minting)
+    // ============================================
+    console.log("\n📦 2.5 Deploying our own Mock USDC...");
+    const USDC = await hre.ethers.getContractFactory("USDC");
+    const mockUsdc = await USDC.deploy();
+    await mockUsdc.deployed();
+    console.log(`   ✅ Mock USDC deployed to: ${mockUsdc.address}`);
+
+    // ============================================
     // 3. DEPLOY COLLATERAL MANAGER
     // ============================================
     console.log("\n📦 3. Deploying CollateralManager...");
@@ -153,7 +162,7 @@ async function main() {
     } else if (network === "sepolia") {  // ✅ Add this block for Sepolia
         // Sepolia Testnet Token Addresses
         collateralTokenAddress = "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9"; // Sepolia WETH
-        debtTokenAddress = "0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8"; // Sepolia USDC (mock)
+        debtTokenAddress = mockUsdc.address; // Sepolia USDC (mock)
         console.log("   🧪 Using Sepolia testnet tokens");
     }
     else if (network === "localhost" || network === "hardhat") {
@@ -243,13 +252,16 @@ async function main() {
     // ============================================
     console.log("\n💵 Funding BorrowEngine with mock USDC liquidity...");
 
-    const usdc = await hre.ethers.getContractAt("USDC", debtTokenAddress);
-    const fundAmount = hre.ethers.utils.parseEther("1000000"); // 1,000,000 USDC (18 decimals)
-
-    const mintTx = await usdc.mint(borrowEngine.address, fundAmount);
+    const fundAmount = hre.ethers.utils.parseEther("1000000");
+    const mintTx = await mockUsdc.mint(borrowEngine.address, fundAmount);
     await mintTx.wait();
     console.log(`   ✅ Minted ${hre.ethers.utils.formatEther(fundAmount)} USDC to BorrowEngine`);
 
+    // Mint some USDC to deployer wallet too, for testing repay/liquidate
+    const mintToDeployerTx = await mockUsdc.mint(deployer.address, hre.ethers.utils.parseEther("10000"));
+    await mintToDeployerTx.wait();
+    console.log(`   ✅ Minted 10,000 USDC to deployer wallet for testing`);
+    
     // ============================================
     // SAVE DEPLOYMENT ADDRESSES
     // ============================================
