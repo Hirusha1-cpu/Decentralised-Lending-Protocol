@@ -222,6 +222,35 @@ async function main() {
     console.log(`   ✅ HealthMonitor deployed to: ${healthMonitor.address}`);
 
     // ============================================
+    // 6.5 AUTHORIZE ENGINES TO WRITE TO DATA STORAGE
+    // ============================================
+    console.log("\n🔐 Authorizing engines to write to DataStorage...");
+
+    let tx = await dataStorage.setAuthorizedCaller(collateralManager.address, true);
+    await tx.wait();
+    console.log(`   ✅ CollateralManager authorized: ${collateralManager.address}`);
+
+    tx = await dataStorage.setAuthorizedCaller(borrowEngine.address, true);
+    await tx.wait();
+    console.log(`   ✅ BorrowEngine authorized: ${borrowEngine.address}`);
+
+    tx = await dataStorage.setAuthorizedCaller(liquidationEngine.address, true);
+    await tx.wait();
+    console.log(`   ✅ LiquidationEngine authorized: ${liquidationEngine.address}`);
+
+    // ============================================
+    // 6.6 FUND BORROW ENGINE WITH USDC (mock liquidity)
+    // ============================================
+    console.log("\n💵 Funding BorrowEngine with mock USDC liquidity...");
+
+    const usdc = await hre.ethers.getContractAt("USDC", debtTokenAddress);
+    const fundAmount = hre.ethers.utils.parseEther("1000000"); // 1,000,000 USDC (18 decimals)
+
+    const mintTx = await usdc.mint(borrowEngine.address, fundAmount);
+    await mintTx.wait();
+    console.log(`   ✅ Minted ${hre.ethers.utils.formatEther(fundAmount)} USDC to BorrowEngine`);
+
+    // ============================================
     // SAVE DEPLOYMENT ADDRESSES
     // ============================================
     console.log("\n💾 Saving deployment addresses...");
