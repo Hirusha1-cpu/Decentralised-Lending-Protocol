@@ -1,94 +1,86 @@
 # Decentralised Lending Protocol
 
-A full-stack decentralized lending protocol built on Ethereum (Sepolia testnet), inspired by Aave/Compound-style collateralized lending. Users can deposit WETH as collateral, borrow USDC against it, repay debt, and liquidate unhealthy positions.
+A decentralized lending protocol built on Ethereum, where users can deposit WETH as collateral, borrow USDC against it, repay their debt, and liquidate unhealthy positions — all on-chain.
 
 🔗 **Live App:** [https://decentralised-lending-protocol.vercel.app/](https://decentralised-lending-protocol.vercel.app/)
 
 ---
 
-## ✨ Features
+## About
 
-- **Deposit Collateral** — Deposit WETH to back your borrowing power
-- **Borrow** — Borrow USDC against deposited collateral (up to 150% collateral ratio)
-- **Repay** — Repay outstanding USDC debt to improve your health factor
-- **Liquidate** — Liquidate unhealthy positions (health factor < 1.0) and earn a 10% penalty bonus
-- **Health Factor Monitoring** — Real-time on-chain health factor and risk status (Safe / Warning / Danger / Liquidatable)
-- **Live Price Feeds** — ETH/USD pricing via Chainlink oracles
-- **Wallet Integration** — Connect via MetaMask / any injected Web3 wallet
+This is a full-stack DeFi lending protocol I built to understand how collateralized lending platforms like Aave and Compound work under the hood. It covers the full lending lifecycle — depositing collateral, borrowing against it, tracking health factor in real time, repaying debt, and liquidating risky positions.
+
+Currently deployed and live on the **Sepolia testnet**.
 
 ---
 
-## 🏗️ Architecture
+## Features
 
-The protocol is split across L1 and L2 contract sets (bridging scaffolding included for future rollup support), with the core lending logic currently deployed and active on **Sepolia**.
+- **Deposit Collateral** — Deposit WETH to unlock borrowing power
+- **Borrow** — Borrow USDC against your deposited collateral (150% collateral ratio)
+- **Repay** — Pay back debt to improve your health factor
+- **Liquidate** — Liquidate positions that fall below a safe health factor and earn a liquidation bonus
+- **Health Factor Tracking** — Live on-chain health factor with Safe / Warning / Danger / Liquidatable status
+- **Live Price Feeds** — ETH/USD pricing pulled from Chainlink oracles
+- **Wallet Connect** — Connect with MetaMask or any injected Web3 wallet
+
+---
+
+## How It Works
+
+1. **Deposit** — Deposit WETH into the `CollateralManager` contract, which records your position and calculates its USD value using the price oracle.
+2. **Borrow** — Borrow USDC through the `BorrowEngine`, capped at 150% collateral ratio. The contract checks your resulting health factor before approving the loan.
+3. **Health Factor** — Calculated from your collateral value vs. your debt. A health factor below `1.0` means your position can be liquidated.
+4. **Liquidate** — Anyone can liquidate an unhealthy position by repaying its debt, receiving a discounted claim on that position's collateral plus a 10% bonus.
+
+---
+
+## Smart Contract Architecture
 
 ```
 contracts/
 ├── L2/
-│   ├── DataStorage.sol         # Central storage for user positions & protocol params
+│   ├── DataStorage.sol         # Stores user positions & protocol parameters
 │   ├── PriceOracle.sol         # Chainlink ETH/USD price feed wrapper
-│   ├── CollateralManager.sol   # Deposit / withdraw collateral
-│   ├── BorrowEngine.sol        # Borrow / repay debt
-│   ├── LiquidationEngine.sol   # Liquidate unhealthy positions
-│   └── HealthMonitor.sol       # Read-only health factor / risk status views
+│   ├── CollateralManager.sol   # Handles deposits & withdrawals
+│   ├── BorrowEngine.sol        # Handles borrowing & repayments
+│   ├── LiquidationEngine.sol   # Handles liquidations
+│   └── HealthMonitor.sol       # Read-only health factor & risk views
 ├── L1/
-│   ├── Rollup.sol               # Batch submission & finalization (optimistic rollup scaffold)
+│   ├── Rollup.sol               # Batch submission & finalization
 │   ├── DataAvailability.sol     # L2 batch data storage on L1
 │   ├── Bridge.sol               # L1 ↔ L2 asset bridging
 │   └── Escrow.sol               # L1 asset custody
 ├── interfaces/                  # IERC20, IPriceOracle, IKeepers
-└── mocks/                       # Mock USDC, WETH9, PriceOracle for local testing
+└── mocks/                       # Mock tokens & oracle for testing
 ```
 
-### Core Protocol Parameters
+### Protocol Parameters
 
 | Parameter              | Value |
-|-------------------------|-------|
-| Collateral Ratio         | 150%  |
-| Liquidation Threshold    | 80%   |
-| Liquidation Penalty      | 10%   |
-| Interest Rate            | 5% APY |
+|--------------------------|-------|
+| Collateral Ratio          | 150%  |
+| Liquidation Threshold     | 80%   |
+| Liquidation Penalty       | 10%   |
+| Interest Rate             | 5% APY |
 
-### Access Control
-
-`DataStorage` uses an **authorized-caller pattern** (rather than a single `Ownable` owner) so that `CollateralManager`, `BorrowEngine`, and `LiquidationEngine` can all write user position data:
-
-```solidity
-mapping(address => bool) public authorizedCallers;
-function setAuthorizedCaller(address caller, bool status) external onlyOwner;
-```
+You can browse the deployed smart contracts directly on Etherscan:
+🔗 [View on Sepolia Etherscan](https://sepolia.etherscan.io)
 
 ---
 
-## 🌐 Deployed Contracts (Sepolia)
-
-| Contract            | Address |
-|----------------------|---------|
-| DataStorage           | `0x3f9D193070249A78a6A0558294AF9302CD366c4C` |
-| PriceOracle            | `0xb8EfDddE70B71824114e30c8682BbC0fBD8C173F` |
-| CollateralManager      | `0x69c961c437EDD25FD487138f95F6050062C66A3E` |
-| BorrowEngine           | `0x02d09e014388A4B1cc39127EB4C7BCD47B68786c` |
-| LiquidationEngine      | `0xF65aC9881A731c724ab56FE80F9B5b48DD5329e7` |
-| HealthMonitor          | `0x2f562f5F0bc98fFa55192ba00F466e5058233C57` |
-| Collateral Token (WETH)| `0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9` |
-| Debt Token (Mock USDC) | `0xDdE1B8e6AFBf97563B428920042B948262fc7913` |
-
-> View any of these on [Sepolia Etherscan](https://sepolia.etherscan.io).
-
----
-
-## 🖥️ Tech Stack
+## Tech Stack
 
 **Smart Contracts**
 - Solidity `^0.8.19`
 - Hardhat
-- OpenZeppelin Contracts (Ownable, ReentrancyGuard, ERC20)
+- OpenZeppelin Contracts
 - Chainlink Price Feeds
 
 **Frontend**
 - React 19
 - ethers.js v6
-- web3modal (wallet connection)
+- web3modal
 
 **Deployment**
 - Vercel (frontend)
@@ -96,30 +88,30 @@ function setAuthorizedCaller(address caller, bool status) external onlyOwner;
 
 ---
 
-## 📦 Project Structure
+## Project Structure
 
 ```
 ├── contracts/          # Solidity smart contracts (L1 + L2)
-├── frontend/            # React frontend application
+├── frontend/            # React frontend
 │   └── src/
 │       ├── components/  # Dashboard, Deposit, Borrow, Repay, Liquidate, HealthFactor
 │       ├── hooks/        # useWeb3, useContract, usePosition
 │       └── utils/        # ABIs, constants, helpers
-├── scripts/              # Deployment & configuration scripts
+├── scripts/              # Deployment scripts
 ├── test/unit/            # Hardhat unit tests
 └── hardhat.config.js
 ```
 
 ---
 
-## 🚀 Getting Started (Local Development)
+## Running Locally
 
 ### Prerequisites
 - Node.js
 - MetaMask (or another injected wallet)
 - Sepolia testnet ETH ([faucet](https://sepoliafaucet.com/))
 
-### 1. Clone & Install
+### Setup
 
 ```bash
 git clone https://github.com/Hirusha1-cpu/Decentralised-Lending-Protocol.git
@@ -128,75 +120,44 @@ npm install
 cd frontend && npm install && cd ..
 ```
 
-### 2. Configure Environment
+Set up your own `.env` file in the project root with your RPC URL and wallet key (see `hardhat.config.js` for required variables).
 
-Create a `.env` file in the project root:
-
-```env
-PRIVATE_KEY=your_wallet_private_key
-SEPOLIA_URL=your_rpc_url
-ETHERSCAN_API_KEY=your_etherscan_api_key
-COINMARKETCAP_API_KEY=your_coinmarketcap_api_key
-```
-
-### 3. Compile Contracts
+### Compile & Deploy
 
 ```bash
 npx hardhat compile
-```
-
-### 4. Deploy to Sepolia
-
-```bash
 npx hardhat run scripts/deploy.js --network sepolia
 ```
 
-This will:
-- Deploy all core contracts
-- Deploy a mock USDC token (for testnet liquidity, since real Sepolia USDC isn't controllable)
-- Authorize `CollateralManager`, `BorrowEngine`, and `LiquidationEngine` to write to `DataStorage`
-- Fund `BorrowEngine` with mock USDC liquidity so users can borrow
+Update the deployed contract addresses in `frontend/src/utils/constants.js` after deploying.
 
-### 5. Update Frontend Contract Addresses
-
-Copy the deployed addresses from the console output into `frontend/src/utils/constants.js`.
-
-### 6. Run the Frontend
+### Run the Frontend
 
 ```bash
 cd frontend
 npm start
 ```
 
-Visit `http://localhost:3000`.
+Then open `http://localhost:3000`.
 
 ---
 
-## 🧪 Running Tests
+## Tests
 
 ```bash
 npx hardhat test
 ```
 
-Unit tests cover `BorrowEngine`, `LiquidationEngine`, and `CollateralManager` core logic.
+Covers core logic for `BorrowEngine`, `LiquidationEngine`, and `CollateralManager`.
 
 ---
 
-## 📖 How It Works
+## Disclaimer
 
-1. **Deposit** — User deposits WETH into `CollateralManager`, which records the position in `DataStorage` and calculates the USD value via `PriceOracle`.
-2. **Borrow** — User borrows USDC (up to 150% collateral ratio) via `BorrowEngine`, which checks the resulting health factor before approving.
-3. **Health Factor** — Continuously derived from `collateralUSD` vs. `debt`. A health factor below `1.0` marks a position as liquidatable.
-4. **Liquidate** — Anyone can call `LiquidationEngine.liquidate(user)` on an unhealthy position, repaying the debt (+10% penalty) in exchange for a discounted claim on the borrower's collateral.
+This project is deployed on **Sepolia testnet** for learning and demonstration purposes only. It's not audited and shouldn't be used with real funds or deployed to mainnet as-is.
 
 ---
 
-## ⚠️ Disclaimer
-
-This project is deployed on **Sepolia testnet** for educational/demonstration purposes only. It uses a custom mock USDC token (not real USDC) for borrow liquidity. **Do not use this protocol with real funds or on mainnet without a full security audit.**
-
----
-
-## 📄 License
+## License
 
 MIT
