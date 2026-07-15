@@ -27,8 +27,9 @@ export default function Deposit({ contracts, position, account, onSuccess }) {
       // check the allowance is less than parsed amount. the ability to parse amont shoud be less than ability amount.
       if (currentAllowance < parsedAmount) {
         setStep('approving');
-        //
+        // i give my permissions for this COLLATERAL_MANAGER to spent this much of parsed amount from my account 
         const approveTx = await collateralToken.approve(CONTRACT_ADDRESSES.COLLATERAL_MANAGER, parsedAmount);
+        
         await approveTx.wait();
       }
 
