@@ -34,7 +34,7 @@ export default function Deposit({ contracts, position, account, onSuccess }) {
       }
 
       setStep('depositing');
-      // 
+      // The deposit process
       const depositTx = await collateralManager.depositCollateral(parsedAmount);
       setTxHash(depositTx.hash);
       await depositTx.wait();
