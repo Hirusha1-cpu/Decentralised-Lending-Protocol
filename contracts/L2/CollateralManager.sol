@@ -48,6 +48,7 @@ contract CollateralManager is ReentrancyGuard, Ownable {
         require(amount > 0, "Amount must be > 0");
 
         // transfer tokens from user to contract
+        // (token owner, permitted account, approved limit)
         collateralToken.transferFrom(msg.sender, address(this), amount);
 
         // Get user data
