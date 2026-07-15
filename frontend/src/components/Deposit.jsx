@@ -8,9 +8,13 @@ export default function Deposit({ contracts, position, account, onSuccess }) {
   const [error, setError] = useState(null);
   const [txHash, setTxHash] = useState(null);
 
+  // get the collateralManager and collateralToken from the contract
   const { collateralManager, collateralToken } = contracts;
+  // get the input amount
   const parsedAmount = amount ? parseToken(amount) : 0n;
+  // check whether collaterlmanager wallet balance is more than parsed amount
   const hasWalletBalance = position.walletCollateralBalance >= parsedAmount;
+  // can submit only if parsed amount is more than 0, and hasWalletBalance, collateralManager, collateralToken is available.
   const canSubmit = parsedAmount > 0n && hasWalletBalance && collateralManager && collateralToken;
 
   async function handleDeposit() {
@@ -18,6 +22,7 @@ export default function Deposit({ contracts, position, account, onSuccess }) {
     setTxHash(null);
     try {
       // Check current allowance; only send an approve tx if needed
+      
       const currentAllowance = await collateralToken.allowance(account, CONTRACT_ADDRESSES.COLLATERAL_MANAGER);
       if (currentAllowance < parsedAmount) {
         setStep('approving');
