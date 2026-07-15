@@ -29,7 +29,7 @@ export default function Deposit({ contracts, position, account, onSuccess }) {
         setStep('approving');
         // i give my permissions for this COLLATERAL_MANAGER to spent this much of parsed amount from my account 
         const approveTx = await collateralToken.approve(CONTRACT_ADDRESSES.COLLATERAL_MANAGER, parsedAmount);
-        
+        // wait until the transaction approve
         await approveTx.wait();
       }
 
