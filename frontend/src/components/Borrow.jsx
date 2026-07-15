@@ -7,9 +7,13 @@ export default function Borrow({ contracts, position, onSuccess }) {
   const [error, setError] = useState(null);
   const [txHash, setTxHash] = useState(null);
 
+  // get the contract
   const { borrowEngine } = contracts;
+  // get the parsed amount that got from input field
   const parsedAmount = amount ? parseToken(amount) : 0n;
+  // get the is it inside the max borrow limit
   const withinMax = parsedAmount <= position.maxBorrow;
+  // check whether collateral is more than 0
   const hasCollateral = position.collateral > 0n;
   const canSubmit = parsedAmount > 0n && withinMax && hasCollateral && borrowEngine;
 
@@ -18,6 +22,7 @@ export default function Borrow({ contracts, position, onSuccess }) {
     setTxHash(null);
     setSubmitting(true);
     try {
+      // parse the parsedAmount to borrow contract
       const tx = await borrowEngine.borrow(parsedAmount);
       setTxHash(tx.hash);
       await tx.wait();

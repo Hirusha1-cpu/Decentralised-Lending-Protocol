@@ -11,6 +11,7 @@ import "./PriceOracle.sol";
  * @title BorrowEngine Contract
  * @dev Handles borrowing and repaying
  */
+// ReentrancyGuard - reentrant protection mechanism
 contract BorrowEngine is ReentrancyGuard, Ownable {
     IERC20 public debtToken;
     DataStorage public dataStorage;
@@ -37,11 +38,12 @@ contract BorrowEngine is ReentrancyGuard, Ownable {
     /**
      * @dev User borrows tokens
      */
+    // borrow process
     function borrow(uint256 amount) external nonReentrant {
         // check the amount is more than 0
         require(amount > 0, "Amount must be > 0");
 
-        // get the userdata
+        // get the userdata, and check whether collateral amount more than 0
         DataStorage.UserData memory userData = dataStorage.getUserData(msg.sender);
         require(userData.collateral > 0, "No collateral");
 
@@ -50,6 +52,7 @@ contract BorrowEngine is ReentrancyGuard, Ownable {
         require(amount <= maxBorrow, "Amount exceeds max borrow");
 
         // Calculate new health factor
+        // when borrow, then debt will increase
         uint256 newDebt = userData.debt + amount;
         uint256 price = priceOracle.getLatestPrice();
         uint256 collateralUSD = userData.collateralUSD;
@@ -68,7 +71,7 @@ contract BorrowEngine is ReentrancyGuard, Ownable {
             userData.debt += interest;
             emit InterestAccrued(msg.sender, interest);
         }
-        
+        // set the data 
         dataStorage.setUserData(msg.sender, userData);
 
         // Transfer tokens to user
@@ -91,12 +94,13 @@ contract BorrowEngine is ReentrancyGuard, Ownable {
 
         uint256 repayAmount = amount;
         if (repayAmount > userData.debt) {
+            // set the debt amount as repay amount, if the amount more than repay amount
             repayAmount = userData.debt;
         }
         // Transfer tokens from user to contract
         debtToken.transferFrom(msg.sender, address(this), repayAmount);
 
-        // Update user data
+        // Update user data, reduce the debt
         userData.debt -= repayAmount;
         userData.lastUpdate = block.timestamp;
 

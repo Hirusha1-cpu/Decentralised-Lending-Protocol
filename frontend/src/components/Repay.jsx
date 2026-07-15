@@ -7,7 +7,7 @@ export default function Repay({ contracts, position, account, onSuccess }) {
   const [step, setStep] = useState('idle'); // idle | approving | repaying
   const [error, setError] = useState(null);
   const [txHash, setTxHash] = useState(null);
-
+ // get the contract borrowEngine , debtToken
   const { borrowEngine, debtToken } = contracts;
   const parsedAmount = amount ? parseToken(amount) : 0n;
   const hasWalletBalance = position.walletDebtBalance >= parsedAmount;
@@ -18,9 +18,11 @@ export default function Repay({ contracts, position, account, onSuccess }) {
     setError(null);
     setTxHash(null);
     try {
+      // get the current allowance 
       const currentAllowance = await debtToken.allowance(account, CONTRACT_ADDRESSES.BORROW_ENGINE);
       if (currentAllowance < parsedAmount) {
         setStep('approving');
+        // i give my permission to transfer
         const approveTx = await debtToken.approve(CONTRACT_ADDRESSES.BORROW_ENGINE, parsedAmount);
         await approveTx.wait();
       }
