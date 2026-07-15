@@ -36,7 +36,9 @@ export default function Deposit({ contracts, position, account, onSuccess }) {
       setStep('depositing');
       // The deposit process, deposit and lock money inside the contract.
       const depositTx = await collateralManager.depositCollateral(parsedAmount);
+      // set the hash
       setTxHash(depositTx.hash);
+      // wait untill transaction happens
       await depositTx.wait();
 
       setAmount('');
