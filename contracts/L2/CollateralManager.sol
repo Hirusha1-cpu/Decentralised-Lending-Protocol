@@ -42,6 +42,7 @@ contract CollateralManager is ReentrancyGuard, Ownable {
     /**
      * @dev User deposits collateral
      */
+    // this is nonReetrant process case to this is transaction process, not allow to execute transaction process
     function depositCollateral(uint256 amount) external nonReentrant {
         // amount should more than 0
         require(amount > 0, "Amount must be > 0");
