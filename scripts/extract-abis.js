@@ -47,7 +47,7 @@ contracts.forEach(contract => {
     }
 });
 
-// Save to frontend
+// Save to frontend.
 const outputPath = path.join(__dirname, '../frontend/src/utils/abi.js');
 const output = `// Auto-generated ABIs - Do not edit manually\n\n`;
 const abiContent = `export const ABIS = ${JSON.stringify(abis, null, 4)};\n\nexport default ABIS;`;
