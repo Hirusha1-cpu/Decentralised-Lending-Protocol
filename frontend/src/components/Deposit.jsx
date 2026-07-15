@@ -22,10 +22,12 @@ export default function Deposit({ contracts, position, account, onSuccess }) {
     setTxHash(null);
     try {
       // Check current allowance; only send an approve tx if needed
-      // check the allowance
+      // check the allowance, that ability of how much can be spent
       const currentAllowance = await collateralToken.allowance(account, CONTRACT_ADDRESSES.COLLATERAL_MANAGER);
+      // check the allowance is less than parsed amount. the ability to parse amont shoud be less than ability amount.
       if (currentAllowance < parsedAmount) {
         setStep('approving');
+        //
         const approveTx = await collateralToken.approve(CONTRACT_ADDRESSES.COLLATERAL_MANAGER, parsedAmount);
         await approveTx.wait();
       }
