@@ -24,7 +24,7 @@ Currently deployed and live on the **Sepolia testnet**.
 - **Live Price Feeds** — ETH/USD pricing pulled from Chainlink oracles
 - **Wallet Connect** — Connect with MetaMask or any injected Web3 wallet
 
----
+----
 
 ## How It Works
 
@@ -33,7 +33,7 @@ Currently deployed and live on the **Sepolia testnet**.
 3. **Health Factor** — Calculated from your collateral value vs. your debt. A health factor below `1.0` means your position can be liquidated.
 4. **Liquidate** — Anyone can liquidate an unhealthy position by repaying its debt, receiving a discounted claim on that position's collateral plus a 10% bonus.
 
----
+----
 
 ## Smart Contract Architecture
 
