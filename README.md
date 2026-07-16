@@ -12,7 +12,7 @@ This is a full-stack DeFi lending protocol I built to understand how collaterali
 
 Currently deployed and live on the **Sepolia testnet**.
 
----
+----
 
 ## Features
 
