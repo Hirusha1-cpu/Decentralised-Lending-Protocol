@@ -160,4 +160,4 @@ This project is deployed on **Sepolia testnet** for learning and demonstration p
 
 ## License
 
-MIT
+MIT License
