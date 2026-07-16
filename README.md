@@ -67,7 +67,7 @@ contracts/
 You can browse the deployed smart contracts directly on Etherscan:
 🔗 [View on Sepolia Etherscan](https://sepolia.etherscan.io)
 
----
+----
 
 ## Tech Stack
 
