@@ -18,7 +18,7 @@ contract BorrowEngine is ReentrancyGuard, Ownable {
     PriceOracle public priceOracle;
 
     uint256 public constant COLLATERAL_RATIO = 150; // 150%
-    uint256 public constant INTEREST_RATE = 5; // 5% APY
+    uint256 public constant INTEREST_RATE = 5; // 5% APY,
 
     // Events
     event Borrowed(address indexed user, uint256 amount);
