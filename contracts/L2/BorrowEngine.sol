@@ -40,7 +40,7 @@ contract BorrowEngine is ReentrancyGuard, Ownable {
      */
     // borrow process
     function borrow(uint256 amount) external nonReentrant {
-        // check the amount is more than 0
+        // check the amount is more than 0.
         require(amount > 0, "Amount must be > 0");
 
         // get the userdata, and check whether collateral amount more than 0
