@@ -11,7 +11,7 @@ import "./PriceOracle.sol";
  * @title BorrowEngine Contract
  * @dev Handles borrowing and repaying
  */
-// ReentrancyGuard - reentrant protection mechanism
+// ReentrancyGuard - reentrant protection mechanism.
 contract BorrowEngine is ReentrancyGuard, Ownable {
     IERC20 public debtToken;
     DataStorage public dataStorage;
